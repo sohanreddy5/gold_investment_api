@@ -4,35 +4,34 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import random
 import sqlite3
-import os
 
 app = FastAPI(title="Digital Gold Chatbot")
 
-# Setup SQLite database
-DB_FILE = "gold_transactions.db"
+# Serve static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="static")
+
+# Database setup
+DB_NAME = "gold_transactions.db"
 
 def init_db():
-    conn = sqlite3.connect(DB_FILE)
+    conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT NOT NULL,
-            gold_type TEXT NOT NULL,
-            amount_spent REAL NOT NULL,
-            gold_purchased_g REAL NOT NULL,
-            price_per_gram REAL NOT NULL,
-            transaction_status TEXT NOT NULL
+            user_id TEXT,
+            gold_type TEXT,
+            amount_spent REAL,
+            gold_purchased_g REAL,
+            price_per_gram REAL,
+            transaction_status TEXT
         )
     """)
     conn.commit()
     conn.close()
 
 init_db()
-
-# Serve static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="static")
 
 # Descriptive replies
 gold_safety_replies = [
@@ -52,29 +51,30 @@ gold_buy_replies = [
 def get_chat(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-# First API: /ask-question
+# Ask question API
 @app.post("/ask-question")
 def ask_question(user_id: str = Form(...), query: str = Form(...)):
     query_lower = query.lower()
-    gold_keywords = ["gold", "digital gold", "buy digital gold", "invest digital gold"]
-
-    if any(k in query_lower for k in gold_keywords):
-        if "buy" in query_lower or "purchase" in query_lower:
-            reply = random.choice(gold_buy_replies)
-            current_price = random.randint(10000, 12000)
-            return {
-                "message": f"{reply}\n💰 Current Digital Gold Price: ₹{current_price}/g",
-                "next_step": True,
-                "show_amount_input": True,
-                "current_price": current_price
-            }
-        else:
-            reply = random.choice(gold_safety_replies)
-            return {"message": reply, "next_step": False, "show_amount_input": False}
+    if "buy" in query_lower or "purchase" in query_lower:
+        reply = random.choice(gold_buy_replies)
+        current_price = random.randint(10000, 12000)
+        return {
+            "message": f"{reply}\n💰 Current Digital Gold Price: ₹{current_price}/g",
+            "next_step": True,
+            "show_types": True,
+            "current_price": current_price
+        }
+    elif "gold" in query_lower:
+        reply = random.choice(gold_safety_replies)
+        return {"message": reply, "next_step": False, "show_types": False}
     else:
-        return {"message": "I specialize in Digital Gold investments only. You can ask 'Is Digital Gold safe?' or 'I want to buy Digital Gold'. I'll give detailed guidance!", "next_step": False, "show_amount_input": False}
+        return {
+            "message": "I specialize in Digital Gold investments only. You can ask questions like 'Is Digital Gold safe?' or 'I want to buy Digital Gold'. I'll give detailed guidance!",
+            "next_step": False,
+            "show_types": False
+        }
 
-# Second API: /buy-gold
+# Buy gold API
 @app.post("/buy-gold")
 def buy_gold(
     user_id: str = Form(...),
@@ -84,7 +84,8 @@ def buy_gold(
 ):
     try:
         grams = amount / price_per_gram
-        conn = sqlite3.connect(DB_FILE)
+
+        conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
         cursor.execute("""
             INSERT INTO transactions (user_id, gold_type, amount_spent, gold_purchased_g, price_per_gram, transaction_status)
@@ -94,10 +95,44 @@ def buy_gold(
         conn.close()
 
         return {
-            "message": f"🎉 Transaction successful! You bought {grams:.4f}g of {gold_type} at ₹{price_per_gram}/g for a total of ₹{amount}. Your Digital Gold is safely stored and insured!",
+            "message": f"🎉 Transaction successful! You bought {grams:.4f}g of {gold_type} at ₹{price_per_gram}/g for a total of ₹{amount}. Your digital gold is safely stored and insured!",
+            "transaction": {
+                "user_id": user_id,
+                "gold_type": gold_type,
+                "amount_spent": amount,
+                "gold_purchased_g": grams,
+                "price_per_gram": price_per_gram,
+                "transaction_status": "Success"
+            }
         }
 
     except Exception as e:
         return {
             "message": f"❌ Transaction failed due to: {str(e)}. Please try again.",
+            "transaction": None
         }
+
+# 🔥 New API to view all transactions
+@app.get("/transactions")
+def get_transactions():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM transactions")
+    rows = cursor.fetchall()
+    conn.close()
+
+    # Convert to dict list
+    transactions = [
+        {
+            "id": row[0],
+            "user_id": row[1],
+            "gold_type": row[2],
+            "amount_spent": row[3],
+            "gold_purchased_g": row[4],
+            "price_per_gram": row[5],
+            "transaction_status": row[6]
+        }
+        for row in rows
+    ]
+
+    return {"transactions": transactions}
