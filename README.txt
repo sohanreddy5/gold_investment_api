@@ -1,141 +1,100 @@
+# Gold Investment API
 
-# Gold Investment Chatbot & API  
-
-This project is a **Digital Gold Investment platform** built with **FastAPI** for the backend, a **SQLite database** for storage, and a **simple frontend (HTML, CSS, JS)** for user interaction.  
-
-It allows users to:  
-- Ask questions about **gold investment** through a **chatbot**.  
-- **Buy gold** using the API, with details securely stored in the database.  
-- View transactions stored in **SQLite**.  
+This is a **FastAPI-based backend project** that provides insights, chatbot responses, and database-driven APIs for **Digital Gold investments**.
 
 ---
 
-## 🔌 APIs Used  
-
-### 1. **Chatbot API**  
-**Endpoint:** `/ask-question` (POST)  
-- Takes a user’s question as input.  
-- Returns a descriptive answer about gold investment.  
-- Example:  
-  ```json
-  { "question": "Is gold a safe investment?" }
-  ```
-  Response:  
-  ```json
-  { "answer": "Yes, gold is considered a safe investment, especially during inflation." }
-  ```
+## 🚀 Features
+- **Chatbot API**: Provides answers to Digital Gold investment questions.
+- **Database Integration (SQLite)**: Stores investment transactions locally.
+- **Transactions Endpoint**:  
+  - `/transactions` → returns all stored transactions in **JSON format**.
+- **FastAPI Interactive Docs**: Automatically generated at `/docs` and `/redoc`.
 
 ---
 
-### 2. **Buy Gold API**  
-**Endpoint:** `/buy-gold` (POST)  
-- Accepts details like user ID, amount to invest, gold type, and current price per gram.  
-- Calculates how many grams of gold are purchased.  
-- Stores transaction in the **SQLite database** (`gold_transactions.db`).  
-- Example:  
-  ```json
-  { "user_id": "sohan123", "amount": 2000, "gold_type": "Digital Gold", "price_per_gram": 6000 }
-  ```
-  Response:  
-  ```json
-  {
-    "message": "🎉 You bought 0.3333g of Digital Gold at ₹6000/g for ₹2000. Safely stored and insured!",
-    "db_entry": {
-      "user_id": "sohan123",
-      "gold_type": "Digital Gold",
-      "amount_spent": 2000,
-      "gold_purchased_g": 0.3333,
-      "price_per_gram": 6000,
-      "transaction_status": "Success"
-    }
-  }
-  ```
+## 🛠️ Tech Stack
+- **Python 3.9+**
+- **FastAPI**
+- **SQLite3** (local database)
+- **Uvicorn** (ASGI server)
+- **SQLAlchemy** (for ORM, if extended)
 
 ---
 
-## 🖥️ Technologies Used  
-
-### Backend (Server Side)  
-- **FastAPI** → Framework for APIs  
-- **Uvicorn** → ASGI server to run the app  
-- **SQLite** → Lightweight database for storing transactions  
-- **Python** → Main programming language  
-
-### Frontend (Client Side)  
-- **HTML** → Structure of the chatbot page  
-- **CSS** → Styling for chatbot interface  
-- **JavaScript** → Sends questions & transactions to the backend APIs and displays responses  
+## 📂 Project Structure
+```
+gold_investment_api/
+│── main.py           # FastAPI app with endpoints
+│── requirements.txt  # Dependencies
+│── README.md         # Project documentation
+│── static/           # (Optional) static assets
+│── .gitignore        # Ignored files (DB, venv, caches, etc.)
+```
 
 ---
 
-## 📦 Requirements  
+## ⚡ Installation & Setup
 
-To run this project, you need:  
-- **Python 3.9+**  
-- **pip** (Python package installer)  
-- Required dependencies (install with):  
-  ```bash
-  pip install -r requirements.txt
-  ```
-
-Main libraries in `requirements.txt`:  
-- fastapi  
-- uvicorn  
-- sqlite3 (built-in with Python)  
-- python-multipart (for form data handling)  
-
----
-
-## 🤖 The Chatbot  
-
-The chatbot is a **rule-based assistant** built into the FastAPI backend.  
-- It receives user questions via `/ask-question`.  
-- Responds with descriptive answers about **digital gold**, safety, investment strategies, etc.  
-- The frontend (`index.html`) provides a simple chat-like interface where users can type questions.  
-
-This is not AI-powered (like ChatGPT), but rather a **pre-programmed, knowledge-based chatbot** focused on **gold investment guidance**.  
-
----
-
-## ▶️ How to Run  
-
-1. Clone the repo and enter the folder:
+1. **Clone the repo**  
    ```bash
-   git clone https://github.com/your-username/gold_investment_api.git
+   git clone https://github.com/sohanreddy5/gold_investment_api.git
    cd gold_investment_api
    ```
 
-2. Activate virtual environment (if set up):  
+2. **Create and activate virtual environment**  
    ```bash
-   source venv/bin/activate   # Mac/Linux  
-   venv\Scripts\activate      # Windows  
+   python3 -m venv venv
+   source venv/bin/activate   # On macOS/Linux
+   venv\Scripts\activate      # On Windows
    ```
 
-3. Run the FastAPI server:  
+3. **Install dependencies**  
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Run the server**  
    ```bash
    uvicorn main:app --reload
    ```
 
-4. Open in browser:  
-   ```
-   http://127.0.0.1:8000
-   ```
+5. **Access APIs**  
+   - Base API → http://127.0.0.1:8000  
+   - Transactions → http://127.0.0.1:8000/transactions  
+   - API docs → http://127.0.0.1:8000/docs  
+   - Redoc docs → http://127.0.0.1:8000/redoc  
+
+--
+6.Access APIs
+•Base API → http://127.0.0.1:8000
+•Transactions → http://127.0.0.1:8000/transactions
+•API docs → http://127.0.0.1:8000/docs
+•Redoc docs → http://127.0.0.1:8000/redoc
+
+## 📝 Example Transaction Response
+```json
+[
+  {
+    "id": 1,
+    "user": "Sohan",
+    "amount": 5000,
+    "type": "buy",
+    "timestamp": "2025-09-06T12:34:56"
+  },
+  {
+    "id": 2,
+    "user": "Ravi",
+    "amount": 3000,
+    "type": "sell",
+    "timestamp": "2025-09-06T13:12:21"
+  }
+]
+```
 
 ---
 
-## 💾 Accessing the Database  
-
-We use **SQLite**, and the database file is `gold_transactions.db`.  
-
-To view saved transactions:  
-
-```bash
-sqlite3 gold_transactions.db
-```
-
-Inside the SQLite shell:  
-```sql
-.tables                -- shows tables
-SELECT * FROM transactions;
-.exit                  -- to quit
-```
+## 📌 Notes
+- The database (`gold_transactions.db`) is **ignored in Git** via `.gitignore`.  
+- Each user cloning the repo can create their own database by running the server.  
+- Extendable for more APIs like **buy/sell gold, user authentication, reports, etc.**
