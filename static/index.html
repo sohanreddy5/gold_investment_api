@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Digital Gold Chatbot</title>
+<style>
+  body { font-family: Arial; margin: 30px; background: #f5f5f5; }
+  #chat-container { width: 500px; margin: auto; border: 1px solid #ccc; border-radius: 10px; padding: 10px; background: white; height: 600px; overflow-y: scroll; display: flex; flex-direction: column; }
+  .message { padding: 10px; margin: 5px; border-radius: 10px; width: fit-content; max-width: 80%; }
+  .user { background: #DCF8C6; align-self: flex-end; }
+  .bot { background: #f1f0f0; align-self: flex-start; }
+  input[type="number"] { width: 100px; padding: 5px; border-radius: 5px; border: 1px solid #ccc; margin-right: 5px; }
+  button { padding: 5px 10px; border-radius: 5px; border: none; background: #007bff; color: white; cursor: pointer; margin-top: 5px; }
+  button:hover { background: #0056b3; }
+</style>
+</head>
+<body>
+
+<h2 style="text-align:center;">Digital Gold Chatbot</h2>
+<div id="chat-container">
+  <div id="chat"></div>
+</div>
+
+<div id="input-container" style="width: 500px; margin: auto; display: flex; margin-top: 10px;">
+  <input type="text" id="user-input" placeholder="Ask me about Digital Gold..." style="flex:1;" />
+  <button onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+async function sendMessage() {
+    const userInput = document.getElementById("user-input").value;
+    const chat = document.getElementById("chat");
+
+    if(!userInput) return;
+
+    // Show user message
+    const userMsg = document.createElement("div");
+    userMsg.className = "message user";
+    userMsg.innerText = userInput;
+    chat.appendChild(userMsg);
+
+    // Call /ask-question API
+    let formData = new FormData();
+    formData.append("user_id", "sohan123");
+    formData.append("query", userInput);
+
+    let response = await fetch("/ask-question", { method: "POST", body: formData });
+    let data = await response.json();
+
+    const botMsg = document.createElement("div");
+    botMsg.className = "message bot";
+    botMsg.innerText = data.message;
+    chat.appendChild(botMsg);
+
+    // If next_step is true, show amount input and Buy button dynamically
+    if(data.next_step) {
+        const pricePerGram = Math.floor(Math.random() * (12000 - 10000 + 1)) + 10000;
+        const priceMsg = document.createElement("div");
+        priceMsg.className = "message bot";
+        priceMsg.innerText = `💰 Current price of Digital Gold: ₹${pricePerGram}/g. Enter the amount you want to invest below:`;
+        chat.appendChild(priceMsg);
+
+        const amountDiv = document.createElement("div");
+        amountDiv.className = "bot";
+        amountDiv.style.display = "flex";
+        const input = document.createElement("input");
+        input.type = "number";
+        input.placeholder = "Amount in ₹";
+        input.id = "dynamic-amount";
+        input.style.marginRight = "5px";
+
+        const btn = document.createElement("button");
+        btn.innerText = "Buy Digital Gold";
+        btn.onclick = () => buyGold(parseFloat(input.value), pricePerGram);
+
+        amountDiv.appendChild(input);
+        amountDiv.appendChild(btn);
+        chat.appendChild(amountDiv);
+    }
+
+    document.getElementById("user-input").value = "";
+    chat.scrollTop = chat.scrollHeight;
+}
+
+async function buyGold(amount, pricePerGram) {
+    if(!amount || amount <= 0) {
+        alert("Enter a valid amount!");
+        return;
+    }
+
+    const chat = document.getElementById("chat");
+
+    let formData = new FormData();
+    formData.append("user_id", "sohan123");
+    formData.append("amount", amount);
+    formData.append("gold_type", "Digital Gold");
+    formData.append("price_per_gram", pricePerGram);
+
+    let response = await fetch("/buy-gold", { method: "POST", body: formData });
+    let data = await response.json();
+
+    const botMsg = document.createElement("div");
+    botMsg.className = "message bot";
+    botMsg.innerText = data.message;
+    chat.appendChild(botMsg);
+    chat.scrollTop = chat.scrollHeight;
+}
+</script>
+
+</body>
+</html>
