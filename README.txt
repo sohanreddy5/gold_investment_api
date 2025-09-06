@@ -66,11 +66,7 @@ gold_investment_api/
    - Redoc docs → http://127.0.0.1:8000/redoc  
 
 --
-6.Access APIs
-•Base API → http://127.0.0.1:8000
-•Transactions → http://127.0.0.1:8000/transactions
-•API docs → http://127.0.0.1:8000/docs
-•Redoc docs → http://127.0.0.1:8000/redoc
+
 
 ## 📝 Example Transaction Response
 ```json
